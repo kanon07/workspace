@@ -14,4 +14,6 @@ echo $cubic
 #gnuplot -e "set xlabel 'time [s/10]'; set ylabel 'Throughput [Mbps]'; set xrange [0:300]; set yrange [0:2000]; plot '$bbr' using 0:7 with lines title 'TCP BBR'; replot '$cubic' using 0:7 with lines title 'CUBIC TCP'; pause -1"
 gnuplot -e "set grid; set xlabel 'time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:2000]; plot '$bbr' using 0:7 with lines title 'TCP BBR'; replot '$cubic' using 0:7 with lines title 'CUBIC TCP'; set terminal png; set out '$1/number$2.png'; replot"
 
-display $1/number$2.png
+gnuplot -e "set terminal x11 3; set grid; set xlabel 'time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:2000]; plot '$bbr' using 0:7 with lines title 'TCP BBR'; replot '$cubic' using 0:7 with lines title 'CUBIC TCP'; pause -1"
+
+#display $1/number$2.png
