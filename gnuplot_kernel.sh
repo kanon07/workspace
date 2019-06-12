@@ -15,10 +15,14 @@ paste -d " " $cubictime $cubic > $cubicdir/time_kernel.txt
 echo $bbr $bbrtime
 echo $cubic $cubictime
 
-#pngへの出力
-gnuplot -e "set grid; set xlabel 'Time [s]'; set ylabel 'Congestion window size [segment]'; plot '$bbrdir/time_kernel.txt' using 1:10 with lines title 'TCP BBR'; replot '$cubicdir/time_kernel.txt' using 1:10 with lines title 'CUBIC TCP'; set terminal png; set out '$1/number${2}_cwnd.png'; replot"
+mkdir -p /media/sf_graphdeta/$1/number${2}
+deta=/media/sf_graphdeta/$1/number${2}
 
-gnuplot -e "set grid; set xlabel 'Time [s]'; set ylabel 'Btlbw'; plot '$bbrdir/time_kernel.txt' using 1:12 with lines title 'Btlbw'; set y2tics; set y2label 'RTprop [us]'; replot '$bbrdir/time_kernel.txt' using 1:14  axis x1y2 with lines title 'RTprop'; set terminal png; set out '$1/number${2}_btlbw_rtprop.png'; replot"
+
+#pngへの出力
+gnuplot -e "set grid; set xlabel 'Time [s]'; set ylabel 'Congestion window size [segment]'; plot '$bbrdir/time_kernel.txt' using 1:10 with lines title 'TCP BBR'; replot '$cubicdir/time_kernel.txt' using 1:10 with lines title 'CUBIC TCP'; set terminal png; set out '$deta/cwnd.png'; replot"
+
+gnuplot -e "set grid; set xlabel 'Time [s]'; set ylabel 'Btlbw'; plot '$bbrdir/time_kernel.txt' using 1:12 with lines title 'Btlbw'; set y2tics; set y2label 'RTprop [us]'; replot '$bbrdir/time_kernel.txt' using 1:14  axis x1y2 with lines title 'RTprop'; set terminal png; set out '$deta/btlbw_rtprop.png'; replot"
 
 #x11で出力
 gnuplot -e "set terminal x11 1; set grid; set xlabel 'Time [s]'; set ylabel 'Congestion window size [segment]'; plot '$bbrdir/time_kernel.txt' using 1:10 with lines title 'TCP BBR'; replot '$cubicdir/time_kernel.txt' using 1:10 with lines title 'CUBIC TCP'; set terminal x11 2; set grid; set xlabel 'Time [s]'; set ylabel 'Btlbw'; plot '$bbrdir/time_kernel.txt' using 1:12 with lines title 'Btlbw'; set y2tics; set y2label 'RTprop [us]'; replot '$bbrdir/time_kernel.txt' using 1:14  axis x1y2 with lines title 'RTprop'; pause -1"
