@@ -7,10 +7,10 @@ queuedir=${1}number${2}_queue
 
 bbr=`find ${bbrdir} -name *port*.txt`
 bbrtime=`find ${bbrdir} -name time.txt`
-bbrth=`find ${bbrdir} -name *bbr*limit*.txt`
+bbrth=`find ${bbrdir} -name *bbr*iperf*.txt`
 cubic=`find ${cubicdir} -name *port*.txt`
 cubictime=`find ${cubicdir} -name time.txt`
-cubicth=`find ${cubicdir} -name *cubic*limit*.txt`
+cubicth=`find ${cubicdir} -name *cubic*iperf*.txt`
 queue=`find ${queuedir} -name *moni*`
 queuetime=`find ${queuedir} -name time.txt`
 paste -d " " $bbrtime $bbr > $bbrdir/time_kernel.txt
