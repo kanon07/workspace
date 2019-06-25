@@ -1,9 +1,11 @@
 #$1=directory 0606, 0705
 #$2=number
 
-bbrdir=${1}number${2}_Sender1
-cubicdir=${1}number${2}_Sender2
-queuedir=${1}number${2}_queue
+bbrdir=${1}/number${2}/number${2}_Sender1
+cubicdir=${1}/number${2}/number${2}_Sender2
+queuedir=${1}/number${2}/number${2}_queue
+
+echo $bbrdir
 
 bbr=`find ${bbrdir} -name *port*.txt`
 bbrtime=`find ${bbrdir} -name time.txt`

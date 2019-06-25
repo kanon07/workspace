@@ -1,1 +1,1 @@
-sh ./temp/mult-tmux.sh 192.168.1.6 192.168.1.4
+sh ./temp/mult-tmux.sh sender1 sender2

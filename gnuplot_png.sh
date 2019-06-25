@@ -1,16 +1,16 @@
 #$1=directory 0606, 0705
 #$2=number
 
-bbrdir=${1}number${2}_Sender1
-cubicdir=${1}number${2}_Sender2
-queuedir=${1}number${2}_queue
+bbrdir=${1}/number${2}/number${2}_Sender1
+cubicdir=${1}/number${2}/number${2}_Sender2
+queuedir=${1}/number${2}/number${2}_queue
 
 bbr=`find ${bbrdir} -name *port*.txt`
 bbrtime=`find ${bbrdir} -name time.txt`
-bbrth=`find ${bbrdir} -name *bbr*iperf*.txt`
+bbrth=`find ${bbrdir} -name bbr*iperf*`
 cubic=`find ${cubicdir} -name *port*.txt`
 cubictime=`find ${cubicdir} -name time.txt`
-cubicth=`find ${cubicdir} -name *cubic*iperf*.txt`
+cubicth=`find ${cubicdir} -name cubic*iperf*`
 queue=`find ${queuedir} -name *moni*`
 queuetime=`find ${queuedir} -name time.txt`
 paste -d " " $bbrtime $bbr > $bbrdir/time_kernel.txt
@@ -39,12 +39,12 @@ gnuplot -e "set grid; set xlabel 'Time [s]'; set ylabel 'sRTT'; plot '$bbrdir/ti
 #using
 #10 = cwnd4= 488
 #12 = btlbw= 1423700
-#14 = rtprop= 2076 
-#16 = mode= 2 
+#14 = rtprop= 2076
+#16 = mode= 2
 #18 = pacing_gain= 256
-#20 = sport= 48106 
-#22 = dport= 5000 
-#24 = srtt_us= 44897 
+#20 = sport= 48106
+#22 = dport= 5000
+#24 = srtt_us= 44897
 #26 = snd_cwnd= 488
 
 
