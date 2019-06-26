@@ -55,6 +55,14 @@ ssh sender1 "echo a > /proc/sane_kernel_bbr_ctrl"
 ssh sender2 "echo a > /proc/sane_kernel_tcp_ctrl"
 ssh queue "echo a > /proc/sane_kernel_sch_ctrl"
 
+#unixタイムセット
+ssh sender1 "sh /desk/shell/time_reset.sh"
+ssh sender2 "sh /desk/shell/time_reset.sh"
+date +%s.%N--set @"$(wget -q https://ntp-a1.nict.go.jp/cgi-bin/jst -O - | sed -n 4p | cut -d. -f1)"
+
+time=`date +'%s.%N'`
+timing=`echo "$time + 2" |bc`
+
 #iperf起動
 echo "======== start iperf ======="
 ssh sender1 "sh /desk/shell/outiperf3.sh $conn $today $time $num"
@@ -105,3 +113,4 @@ Host receiver
     ProxyCommand ssh -W %h:%p queue
     IdentityFile ~/.ssh/id_kanon_rsa
 COMMENTOUT
+

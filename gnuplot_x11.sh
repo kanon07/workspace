@@ -54,12 +54,12 @@ gnuplot -e " $throughput ; $cwnd ; $btl_rtprop ; $queue ; $srtt ;  pause -1"
 #using
 #10 = cwnd4= 488
 #12 = btlbw= 1423700
-#14 = rtprop= 2076 
-#16 = mode= 2 
+#14 = rtprop= 2076
+#16 = mode= 2
 #18 = pacing_gain= 256
-#20 = sport= 48106 
-#22 = dport= 5000 
-#24 = srtt_us= 44897 
+#20 = sport= 48106
+#22 = dport= 5000
+#24 = srtt_us= 44897
 #26 = snd_cwnd= 488
 
 
