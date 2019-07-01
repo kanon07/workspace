@@ -9,7 +9,10 @@ qlen=$6
 rate=$7
 num=$8
 target=$9
+expmode=${10}
+option=${11}
 
+rm -rf /media/sf_result/$today/number${num}
 mkdir -p /media/sf_result/$today/number${num}/
 log=/media/sf_result/$today/number${num}/log.txt
 
@@ -55,30 +58,49 @@ ssh sender1 "echo a > /proc/sane_kernel_bbr_ctrl"
 ssh sender2 "echo a > /proc/sane_kernel_tcp_ctrl"
 ssh queue "echo a > /proc/sane_kernel_sch_ctrl"
 
-#unixタイムセット
-ssh sender1 "sh /desk/shell/time_reset.sh"
-ssh sender2 "sh /desk/shell/time_reset.sh"
-date +%s.%N--set @"$(wget -q https://ntp-a1.nict.go.jp/cgi-bin/jst -O - | sed -n 4p | cut -d. -f1)"
-
-time=`date +'%s.%N'`
-timing=`echo "$time + 2" |bc`
-
 #iperf起動
 echo "======== start iperf ======="
-ssh sender1 "sh /desk/shell/outiperf3.sh $conn $today $time $num"
-ssh sender2 "sh /desk/shell/outiperf3.sh $conn $today $time $num"
+if [ $option = 1 ]; then
+    ssh delay "sh /home/shell/qdisc_deta.sh" >> $log &
+fi
+case "$expmode" in
+    "0" ) ssh sender1 "sh /desk/shell/outiperf3.sh $conn $today $time $num" ;;
+    "1" ) ssh sender2 "sh /desk/shell/outiperf3.sh $conn $today $time $num" ;;
+    "2" ) ssh sender1 "sh /desk/shell/outiperf3.sh $conn $today $time $num" & ssh sender2 "sh /desk/shell/outiperf3.sh $conn $today $time $num" ;;
+esac
 countDown $losstime
-echo "======= end iperf ======="
+echo "======== end iperf ======"
+
+#カーネルモニタ終了
+ssh sender1 "echo a > /proc/sane_kernel_bbr_ctrl"
+ssh sender2 "echo a > /proc/sane_kernel_tcp_ctrl"
+ssh queue "echo a > /proc/sane_kernel_sch_ctrl"
 
 #カーネル抽出
 echo "======== start kernel extract ========"
-ssh queue "echo a > /proc/sane_kernel_sch_ctrl && sh /desk/shell/queue_monitor.sh $today $num && echo reset > /proc/sane_kernel_sch_ctrl && sh /desk/shell/pickup.sh /desk/_result/${today}/ $num" &
-ssh sender1 "echo a > /proc/sane_kernel_bbr_ctrl && sh /desk/shell/pickup.sh /desk/_result/$today $num && echo reset > /proc/sane_kernel_bbr_ctrl" &
-ssh sender2 "echo a > /proc/sane_kernel_tcp_ctrl && sh /desk/shell/pickup.sh /desk/_result/$today $num && echo reset > /proc/sane_kernel_tcp_ctrl"
+case "$expmode" in
+    "0" ) echo "only sender1" |tee -a $log &
+    ssh queue "sh /desk/shell/queue_monitor.sh $today $num" &
+    ssh sender1 "sh /desk/shell/pickup.sh /desk/_result/$today $num" ;;
+
+    "1" ) echo "only sender2" |tee -a $log &
+    ssh queue "sh /desk/shell/queue_monitor.sh $today $num" &
+    ssh sender2 "sh /desk/shell/pickup.sh /desk/_result/$today $num" ;;
+
+    "2" ) echo "co-exsisting sender1 sender2" |tee -a $log &
+    ssh queue "sh /desk/shell/queue_monitor.sh $today $num" &
+    ssh sender1 "sh /desk/shell/pickup.sh /desk/_result/$today $num" &
+    ssh sender2 "sh /desk/shell/pickup.sh /desk/_result/$today $num" ;;
+esac
 echo "======= end kernel extract ========="
 
+ssh sender1 "echo reset > /proc/sane_kernel_bbr_ctrl"
+ssh sender2 "echo reset > /proc/sane_kernel_tcp_ctrl"
+ssh queue "echo reset > /proc/sane_kernel_sch_ctrl"
+
+
 #データ移動
-sh /home/kanon/workspace/temp/deta_scp.sh $today $num
+sh /home/kanon/workspace/temp/deta_scp.sh $today $num $expmode
 
 
 << COMMENTOUT

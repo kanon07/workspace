@@ -1,27 +1,66 @@
 #$1=directory 0606, 0705
 #$2=number
+num=`echo $1 | awk -F '/' '{print $3}'`
+bbrdir=${1}/${num}_Sender1
+cubicdir=${1}/${num}_Sender2
+queuedir=${1}/${num}_queue
+mkdir -p /media/sf_graphdeta/$1/
+deta=/media/sf_graphdeta/$1/
 
-bbrdir=${1}/number${2}/number${2}_Sender1
-cubicdir=${1}/number${2}/number${2}_Sender2
-queuedir=${1}/number${2}/number${2}_queue
+if [ -d $bbrdir -a -d $cubicdir ]; then
+    echo "co-existing"
+    expmode=2
+else
+    if [ -d $bbrdir ]; then
+        echo "only sender1"
+        expmode=0
 
-bbr=`find ${bbrdir} -name *port*.txt`
-bbrtime=`find ${bbrdir} -name time.txt`
-bbrth=`find ${bbrdir} -name bbr*iperf*`
-cubic=`find ${cubicdir} -name *port*.txt`
-cubictime=`find ${cubicdir} -name time.txt`
-cubicth=`find ${cubicdir} -name cubic*iperf*`
-queue=`find ${queuedir} -name *moni*`
-queuetime=`find ${queuedir} -name time.txt`
-paste -d " " $bbrtime $bbr > $bbrdir/time_kernel.txt
-paste -d " " $cubictime $cubic > $cubicdir/time_kernel.txt
-paste -d " " $queuetime $queue > $queuedir/time_kernel.txt
-echo $bbr $bbrtime
-echo $cubic $cubictime
-echo $queue $queuetime
+    elif [ -d $cubicdir ]; then
+        echo "only sender2"
+        expmode=1
+    fi
+fi
 
-mkdir -p /media/sf_graphdeta/$1/number${2}
-deta=/media/sf_graphdeta/$1/number${2}
+case "$expmode" in
+    "0" )
+    bbr=`find ${bbrdir} -name *port*.txt`
+    bbrtime=`find ${bbrdir} -name time.txt`
+    bbrth=`find ${bbrdir} -name *bbr*iperf*.txt`
+    queue=`find ${queuedir} -name *moni*`
+    queuetime=`find ${queuedir} -name time.txt`
+    paste -d " " $bbrtime $bbr > $bbrdir/time_kernel.txt
+    paste -d " " $queuetime $queue > $queuedir/time_kernel.txt
+    echo $bbr $bbrtime
+    echo $queue $queuetime ;;
+
+    "1" )
+    cubic=`find ${cubicdir} -name *port*.txt`
+    cubictime=`find ${cubicdir} -name time.txt`
+    cubicth=`find ${cubicdir} -name *cubic*iperf*.txt`
+    queue=`find ${queuedir} -name *moni*`
+    queuetime=`find ${queuedir} -name time.txt`
+    paste -d " " $cubictime $cubic > $cubicdir/time_kernel.txt
+    paste -d " " $queuetime $queue > $queuedir/time_kernel.txt
+    echo $cubic $cubictime
+    echo $queue $queuetime ;;
+
+    "2" )
+    bbr=`find ${bbrdir} -name *port*.txt`
+    bbrtime=`find ${bbrdir} -name time.txt`
+    bbrth=`find ${bbrdir} -name *bbr*iperf*.txt`
+    cubic=`find ${cubicdir} -name *port*.txt`
+    cubictime=`find ${cubicdir} -name time.txt`
+    cubicth=`find ${cubicdir} -name *cubic*iperf*.txt`
+    queue=`find ${queuedir} -name *moni*`
+    queuetime=`find ${queuedir} -name time.txt`
+    paste -d " " $bbrtime $bbr > $bbrdir/time_kernel.txt
+    paste -d " " $cubictime $cubic > $cubicdir/time_kernel.txt
+    paste -d " " $queuetime $queue > $queuedir/time_kernel.txt
+    echo $bbr $bbrtime
+    echo $cubic $cubictime
+    echo $queue $queuetime ;;
+
+esac
 
 
 #pngへの出力
