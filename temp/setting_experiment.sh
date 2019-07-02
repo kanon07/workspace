@@ -15,6 +15,7 @@ option=${11}
 rm -rf /media/sf_result/$today/number${num}
 mkdir -p /media/sf_result/$today/number${num}/
 log=/media/sf_result/$today/number${num}/log.txt
+alllog=/media/sf_result/$today/alllog.txt
 
 echo "==================================================="
 echo "start experiment"
@@ -32,7 +33,7 @@ ssh sender1 "sh /desk/shell/metrics_flush.sh"
 ssh sender2 "sh /desk/shell/metrics_flush.sh"
 
 #ウィンドウサイズ
-echo "setup windowsize $window" |tee $log
+echo "setup windowsize $window" |tee $log |tee -a $alllog
 ssh sender1 "sh /desk/shell/set_windowsize.sh $window"
 ssh sender2 "sh /desk/shell/set_windowsize.sh $window"
 ssh queue "sh /desk/shell/set_windowsize.sh $window"
@@ -40,14 +41,14 @@ ssh delay "sh /desk/shell/set_windowsize.sh $window"
 ssh receiver "sh /desk/shell/set_windowsize.sh $window"
 
 #遅延時間
-echo "delay ${delay}ms" |tee -a $log
+echo "delay ${delay}ms" |tee -a $log |tee -a $alllog
 ssh delay "tc qdisc replace dev eno1 root netem delay ${delay}ms"
 
 #帯域 バッファ
-echo "rate ${rate}mbit, limit $qlen" |tee -a $log
+echo "rate ${rate}mbit, limit $qlen" |tee -a $log |tee -a $alllog
 ssh queue "tc qdisc replace dev eno1 root netem rate ${rate}mbit limit $qlen"
 
-#echo "CoDel target ${target}ms"|tee $log
+#echo "CoDel target ${target}ms"|tee -a $log |tee -a $alllog
 # ssh queue "tc qdisc replace dev eno1 root codel target ${target}ms"
 
 echo "================================================="
@@ -79,15 +80,15 @@ ssh queue "echo a > /proc/sane_kernel_sch_ctrl"
 #カーネル抽出
 echo "======== start kernel extract ========"
 case "$expmode" in
-    "0" ) echo "only sender1" |tee -a $log &
+    "0" ) echo "only sender1" |tee -a $log |tee -a $alllog &
     ssh queue "sh /desk/shell/queue_monitor.sh $today $num" &
     ssh sender1 "sh /desk/shell/pickup.sh /desk/_result/$today $num" ;;
 
-    "1" ) echo "only sender2" |tee -a $log &
+    "1" ) echo "only sender2" |tee -a $log |tee -a $alllog &
     ssh queue "sh /desk/shell/queue_monitor.sh $today $num" &
     ssh sender2 "sh /desk/shell/pickup.sh /desk/_result/$today $num" ;;
 
-    "2" ) echo "co-exsisting sender1 sender2" |tee -a $log &
+    "2" ) echo "co-exsisting sender1 sender2" |tee -a $log |tee -a $alllog &
     ssh queue "sh /desk/shell/queue_monitor.sh $today $num" &
     ssh sender1 "sh /desk/shell/pickup.sh /desk/_result/$today $num" &
     ssh sender2 "sh /desk/shell/pickup.sh /desk/_result/$today $num" ;;
@@ -101,6 +102,10 @@ ssh queue "echo reset > /proc/sane_kernel_sch_ctrl"
 
 #データ移動
 sh /home/kanon/workspace/temp/deta_scp.sh $today $num $expmode
+
+echo "===================" >> $alllog
+echo " " >> $alllog
+
 
 
 << COMMENTOUT

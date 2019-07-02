@@ -4,30 +4,38 @@ startnum=$1
 endnum=$2
 expmode=0
 
-for i in `seq ${startnum} ${endnum}`
-do
-num=$i
-delay=0
 conn=1
-window=33554432
+delay=5
+window=104857600
+#window=$3
 time=300
-#qlen=`echo "1024 * (4 ^ ($i -1 ))"|bc`
-qlen=16384
 rate=1000
 target=5
 
+#qlen=16384
 
-#1=on 0=off
-option=1
+cnt=0
+for i in `seq ${startnum} ${endnum}`
+do
+    cnt=$((cnt + 1))
+    num=$i
+    #qlen=`echo "1024 * (4 ^ ($cnt -1 ))"|bc`
+    qlen=`echo "16384 * (4 ^ ($cnt -1 ))"|bc`
 
-#0=sender1
-#1=sender2
-#2=multi
 
-echo "start number${num}"
-sh ./temp/setting_experiment.sh $conn $delay $today $window $time $qlen $rate $num $target $expmode $option
+    #option 1=on 0=off
+    option=0
 
-expmode=$(( expmode + 1))
+    #0=sender1
+    #1=sender2
+    #2=multi
+    expmode=2
+
+    echo "start number${num}"
+    sh ./temp/setting_experiment.sh $conn $delay $today $window $time $qlen $rate $num $target $expmode $option
+    echo $qlen
+
+    #expmode=$(( expmode + 1))
 done
 
 #10485760
