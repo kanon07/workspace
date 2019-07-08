@@ -73,11 +73,12 @@ queposi="0,600"
 srtposi="1300,600"
 deliposi="680,600"
 
-co_throughput="set terminal x11 1 title 'Throughput' size $size position $thposi; set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:2000]; plot '$bbrth' using 0:7 with lines lc 3 title 'TCP BBR'; replot '$cubicth' using 0:7 with lines lc 4 title 'CUBIC TCP'; reset"
 
-throughput1="set terminal x11 1 title 'Throughput' size $size position $thposi; set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:2000]; plot '$bbrth' using 0:7 with lines lc 3 title 'TCP BBR'; reset"
+co_throughput="set terminal x11 1 title 'Throughput' size $size position $thposi; set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:1200]; plot '$bbrth' using 0:7 with lines lc 3 title 'TCP BBR'; replot '$cubicth' using 0:7 with lines lc 4 title 'CUBIC TCP'; reset"
 
-throughput2="set terminal x11 1 title 'Throughput' size $size position $thposi; set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:2000]; plot '$cubicth' using 0:7 with lines lc 4 title 'CUBIC TCP'; reset"
+throughput1="set terminal x11 1 title 'Throughput' size $size position $thposi; set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:1200]; plot '$bbrth' using 0:7 with lines lc 3 title 'TCP BBR'; reset"
+
+throughput2="set terminal x11 1 title 'Throughput' size $size position $thposi; set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:1200]; plot '$cubicth' using 0:7 with lines lc 4 title 'CUBIC TCP'; reset"
 
 
 co_cwnd="set terminal x11 2 title 'Cwnd' size $size position $cwposi; set grid; set xlabel 'Time [s]'; set ylabel 'Congestion window size [segment]'; plot '$bbrdir/time_kernel.txt' using 1:10 with lines lc 3 title 'TCP BBR'; replot '$cubicdir/time_kernel.txt' using 1:10 with lines lc 4 title 'CUBIC TCP'; reset"

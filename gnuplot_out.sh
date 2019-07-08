@@ -62,29 +62,40 @@ case "$expmode" in
 
 esac
 
+#拡張子
 extension=png
+#emf
+
+
+#フォントサイズ
+xfont="set xlabel font 'Arial,15';"
+yfont="set ylabel font 'Arial,15';"
+ticfont="set tics font 'Arial,15';"
+keyfont="set key font 'Arial, 15';"
+fonts=${xfont}${yfont}${ticfont}${keyfont}
+
 
 #$extensionへの出力
-co_throughput="set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:2000]; plot '$bbrth' using 0:7 with lines lc 3 title 'TCP BBR'; replot '$cubicth' using 0:7 with lines lc 4 title 'CUBIC TCP'; set terminal $extension; set out '$deta/throughput.$extension'; replot"
+co_throughput="set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:1200]; plot '$bbrth' using 0:7 with lines lc 3 title 'TCP BBR'; replot '$cubicth' using 0:7 with lines lc 4 title 'CUBIC TCP'; $fonts set terminal $extension; set out '$deta/throughput.$extension'; replot"
 
-throughput1="set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:2000]; plot '$bbrth' using 0:7 with lines lc 3 title 'TCP BBR'; set terminal $extension; set out '$deta/throughput.$extension'; replot"
+throughput1="set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:1200]; plot '$bbrth' using 0:7 with lines lc 3 title 'TCP BBR'; $fonts set terminal $extension; set out '$deta/throughput.$extension'; replot"
 
-throughput2="set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:2000]; plot '$cubicth' using 0:7 with lines lc 4 title 'CUBIC TCP'; set terminal $extension; set out '$deta/throughput.$extension'; replot"
+throughput2="set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:1200]; plot '$cubicth' using 0:7 with lines lc 4 title 'CUBIC TCP'; $fonts set terminal $extension; set out '$deta/throughput.$extension'; replot"
 
 
-co_cwnd="set grid; set xlabel 'Time [s]'; set ylabel 'Congestion window size [segment]'; plot '$bbrdir/time_kernel.txt' using 1:10 with lines lc 3 title 'TCP BBR'; replot '$cubicdir/time_kernel.txt' using 1:10 with lines lc 4 title 'CUBIC TCP'; set terminal $extension; set out '$deta/cwnd.$extension'; replot"
+co_cwnd="set grid; set xlabel 'Time [s]'; set ylabel 'Congestion window size [segment]'; plot '$bbrdir/time_kernel.txt' using 1:10 with lines lc 3 title 'TCP BBR'; replot '$cubicdir/time_kernel.txt' using 1:10 with lines lc 4 title 'CUBIC TCP'; $fonts set terminal $extension; set out '$deta/cwnd.$extension'; replot"
 
-cwnd1="set grid; set xlabel 'Time [s]'; set ylabel 'Congestion window size [segment]'; plot '$bbrdir/time_kernel.txt' using 1:10 with lines lc 3 title 'TCP BBR'; set terminal $extension; set out '$deta/cwnd.$extension'; replot"
+cwnd1="set grid; set xlabel 'Time [s]'; set ylabel 'Congestion window size [segment]'; plot '$bbrdir/time_kernel.txt' using 1:10 with lines lc 3 title 'TCP BBR'; $fonts set terminal $extension; set out '$deta/cwnd.$extension'; replot"
 
-cwnd2="set grid; set xlabel 'Time [s]'; set ylabel 'Congestion window size [segment]'; plot '$cubicdir/time_kernel.txt' using 1:10 with lines lc 4 title 'CUBIC TCP'; set terminal $extension; set out '$deta/cwnd.$extension'; replot"
+cwnd2="set grid; set xlabel 'Time [s]'; set ylabel 'Congestion window size [segment]'; plot '$cubicdir/time_kernel.txt' using 1:10 with lines lc 4 title 'CUBIC TCP'; $fonts set terminal $extension; set out '$deta/cwnd.$extension'; replot"
 
-btl_rtprop="set grid; set xlabel 'Time [s]'; set ylabel 'Btlbw'; plot '$bbrdir/time_kernel.txt' using 1:12 with lines lc 1 title 'Btlbw'; set y2tics; set y2label 'RTprop [us]'; replot '$bbrdir/time_kernel.txt' using 1:14  axis x1y2 with lines lc 2 title 'RTprop'; set terminal $extension; set out '$deta/btl_rtprop.$extension'; replot"
+btl_rtprop="set grid; set xlabel 'Time [s]'; set ylabel 'Btlbw'; plot '$bbrdir/time_kernel.txt' using 1:12 with lines lc 1 title 'Btlbw'; set y2tics; set y2label 'RTprop [us]'; replot '$bbrdir/time_kernel.txt' using 1:14  axis x1y2 with lines lc 2 title 'RTprop'; $fonts set terminal $extension; set out '$deta/btl_rtprop.$extension'; replot"
 
-queue="set grid; set xlabel 'Time [s]'; set ylabel 'Queuelength [packets]'; plot '$queuedir/time_kernel.txt' using 1:42 with lines lc 6 title 'queue'; set terminal $extension; set out '$deta/queue.$extension'; replot"
+queue="set grid; set xlabel 'Time [s]'; set ylabel 'Queuelength [packets]'; plot '$queuedir/time_kernel.txt' using 1:42 with lines lc 6 title 'queue'; $fonts set terminal $extension; set out '$deta/queue.$extension'; replot"
 
-srtt="set grid; set xlabel 'Time [s]'; set ylabel 'RTT [us]'; plot '$bbrdir/time_kernel.txt' using 1:24 with lines lc 7 title 'sRTT'; set terminal $extension; set out '$deta/srtt.$extension'; replot"
+srtt="set grid; set xlabel 'Time [s]'; set ylabel 'RTT [us]'; plot '$bbrdir/time_kernel.txt' using 1:24 with lines lc 7 title 'sRTT'; $fonts set terminal $extension; set out '$deta/srtt.$extension'; replot"
 
-delirate="set grid; set xlabel 'Time [s]'; set ylabel 'deliverd [MB]'; plot '$bbrdir/time_kernel.txt' using 1:28 with lines lc 3 title 'deliverd'; set y2tics; set y2label 'interval [us]'; replot '$bbrdir/time_kernel.txt' using 1:30  axis x1y2 with lines lc 4 title 'interval'; set terminal $extension; set out '$deta/delirate.$extension'; replot"
+delirate="set grid; set xlabel 'Time [s]'; set ylabel 'deliverd [MB]'; plot '$bbrdir/time_kernel.txt' using 1:28 with lines lc 3 title 'deliverd'; set y2tics; set y2label 'interval [us]'; replot '$bbrdir/time_kernel.txt' using 1:30  axis x1y2 with lines lc 4 title 'interval'; $fonts set terminal $extension; set out '$deta/delirate.$extension'; replot"
 
 
 case "$expmode" in
