@@ -15,7 +15,9 @@ option=${11}
 rm -rf /media/sf_result/$today/number${num}
 mkdir -p /media/sf_result/$today/number${num}/
 log=/media/sf_result/$today/number${num}/log.txt
+gragh=/media/sf_graphdeta/result/$today/number${num}/log.txt
 alllog=/media/sf_result/$today/alllog.txt
+graghall=/media/sf_graphdeta/result/$today/alllog.txt
 
 echo "==================================================="
 echo "start experiment"
@@ -106,6 +108,8 @@ sh /home/kanon/workspace/temp/deta_scp.sh $today $num $expmode
 echo "===================" >> $alllog
 echo " " >> $alllog
 
+cp $log $gragh
+cp $alllog $graghall
 
 
 << COMMENTOUT
