@@ -7,6 +7,11 @@ queuedir=${1}/${num}_queue
 mkdir -p /media/sf_graphdeta/$1
 deta=/media/sf_graphdeta/$1
 
+#拡張子
+extension=png
+#emf
+
+
 if [ -d $bbrdir -a -d $cubicdir ]; then
     echo "co-existing"
     expmode=2
@@ -61,11 +66,6 @@ case "$expmode" in
     echo $queue $queuetime ;;
 
 esac
-
-#拡張子
-extension=png
-#emf
-
 
 #フォントサイズ
 xfont="set xlabel font 'Arial,15';"

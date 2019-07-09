@@ -13,7 +13,9 @@ expmode=${10}
 option=${11}
 
 rm -rf /media/sf_result/$today/number${num}
+rm -rf /media/sf_graphdeta/result/$today/number${num}/
 mkdir -p /media/sf_result/$today/number${num}/
+mkdir -p /media/sf_graphdeta/result/$today/number${num}/
 log=/media/sf_result/$today/number${num}/log.txt
 gragh=/media/sf_graphdeta/result/$today/number${num}/log.txt
 alllog=/media/sf_result/$today/alllog.txt
