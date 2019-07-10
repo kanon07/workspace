@@ -68,11 +68,13 @@ case "$expmode" in
 esac
 
 #フォントサイズ
-xfont="set xlabel font 'Arial,15';"
-yfont="set ylabel font 'Arial,15';"
-ticfont="set tics font 'Arial,15';"
-keyfont="set key font 'Arial, 15';"
-fonts=${xfont}${yfont}${ticfont}${keyfont}
+fsize="15"
+xfont="set xlabel font 'Arial,$fsize';"
+yfont="set ylabel font 'Arial,$fsize';"
+y2font="set y2label font 'Arial,$fsize';"
+ticfont="set tics font 'Arial,$fsize';"
+keyfont="set key font 'Arial, $fsize';"
+fonts=${xfont}${yfont}${y2font}${ticfont}${keyfont}
 
 
 #$extensionへの出力

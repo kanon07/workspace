@@ -22,14 +22,7 @@ alllog=/media/sf_result/$today/alllog.txt
 graghall=/media/sf_graphdeta/result/$today/alllog.txt
 
 echo "==================================================="
-echo "start experiment"
-
-
-#モニターリセット
-echo "monitor reset"
-ssh sender1 "echo reset > /proc/sane_kernel_bbr_ctrl"
-ssh sender2 "echo reset > /proc/sane_kernel_tcp_ctrl"
-ssh queue "echo reset > /proc/sane_kernel_sch_ctrl"
+echo "start experiment $today number$num" |tee $log |tee -a $alllog
 
 #メトリクスフラッシュ
 echo "metrics_flush"
@@ -37,7 +30,7 @@ ssh sender1 "sh /desk/shell/metrics_flush.sh"
 ssh sender2 "sh /desk/shell/metrics_flush.sh"
 
 #ウィンドウサイズ
-echo "setup windowsize $window" |tee $log |tee -a $alllog
+echo "setup windowsize $window" |tee -a $log |tee -a $alllog
 ssh sender1 "sh /desk/shell/set_windowsize.sh $window"
 ssh sender2 "sh /desk/shell/set_windowsize.sh $window"
 ssh queue "sh /desk/shell/set_windowsize.sh $window"
@@ -66,7 +59,7 @@ ssh queue "echo a > /proc/sane_kernel_sch_ctrl"
 #iperf起動
 echo "======== start iperf ======="
 if [ $option = 1 ]; then
-    ssh delay "sh /home/shell/qdisc_deta.sh" >> $log &
+    ssh delay "sh /home/shell/autoqdisc.sh" &
 fi
 case "$expmode" in
     "0" ) ssh sender1 "sh /desk/shell/outiperf3.sh $conn $today $time $num" ;;
@@ -106,6 +99,10 @@ ssh queue "echo reset > /proc/sane_kernel_sch_ctrl"
 
 #データ移動
 sh /home/kanon/workspace/temp/deta_scp.sh $today $num $expmode
+if [ $option = 1 ]; then
+    scp delay:/home/shell/autoqdisc.txt /home/kanon/workspace/
+fi
+
 
 echo "===================" >> $alllog
 echo " " >> $alllog
