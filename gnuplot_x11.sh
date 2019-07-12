@@ -27,10 +27,12 @@ case "$expmode" in
     bbr=`find ${bbrdir} -name *port*.txt`
     bbrtime=`find ${bbrdir} -name time.txt`
     bbrth=`find ${bbrdir} -name *bbr*iperf*.txt`
+    bbrbtl=`find ${bbrdir} -name BTLBW.txt`
     queue=`find ${queuedir} -name *moni*`
     queuetime=`find ${queuedir} -name time.txt`
     paste -d " " $bbrtime $bbr > $bbrdir/time_kernel.txt
     paste -d " " $queuetime $queue > $queuedir/time_kernel.txt
+    paste -d " " $bbrtime $bbrbtl > $bbrdir/time_btl.txt
     echo $bbr $bbrtime
     echo $queue $queuetime ;;
 
@@ -49,6 +51,7 @@ case "$expmode" in
     bbr=`find ${bbrdir} -name *port*.txt`
     bbrtime=`find ${bbrdir} -name time.txt`
     bbrth=`find ${bbrdir} -name *bbr*iperf*.txt`
+    bbrbtl=`find ${bbrdir} -name BTLBW.txt`
     cubic=`find ${cubicdir} -name *port*.txt`
     cubictime=`find ${cubicdir} -name time.txt`
     cubicth=`find ${cubicdir} -name *cubic*iperf*.txt`
@@ -57,6 +60,7 @@ case "$expmode" in
     paste -d " " $bbrtime $bbr > $bbrdir/time_kernel.txt
     paste -d " " $cubictime $cubic > $cubicdir/time_kernel.txt
     paste -d " " $queuetime $queue > $queuedir/time_kernel.txt
+    paste -d " " $bbrtime $bbrbtl > $bbrdir/time_btl.txt
     echo $bbr $bbrtime
     echo $cubic $cubictime
     echo $queue $queuetime ;;
@@ -87,7 +91,7 @@ cwnd1="set terminal x11 2 title 'Cwnd' size $size position $cwposi; set grid; se
 
 cwnd2="set terminal x11 2 title 'Cwnd' size $size position $cwposi; set grid; set xlabel 'Time [s]'; set ylabel 'Congestion window size [segment]'; plot '$cubicdir/time_kernel.txt' using 1:10 with lines lc 4 title 'CUBIC TCP'; reset"
 
-btl_rtprop="set terminal x11 3 title 'Btlbw, RTprop' size $size position $btrtposi; set grid; set xlabel 'Time [s]'; set ylabel 'Btlbw'; plot '$bbrdir/time_kernel.txt' using 1:12 with lines lc 1 title 'Btlbw'; set y2tics; set y2label 'RTprop [us]'; set ytics format '%2.1t{/Symbol \264}10^{%L}'; set y2tics format '%2.1t{/Symbol \264}10^{%L}'; replot '$bbrdir/time_kernel.txt' using 1:14  axis x1y2 with lines lc 2 title 'RTprop'; reset"
+btl_rtprop="set terminal x11 3 title 'Btlbw, RTprop' size $size position $btrtposi; set grid; set xlabel 'Time [s]'; set ylabel 'Btlbw [Mbit/s]'; plot '$bbrdir/time_btl.txt' using 1:2 with lines lc 1 title 'Btlbw'; set y2tics; set y2label 'RTprop [us]'; set y2tics format '%2.1t{/Symbol \264}10^{%L}'; replot '$bbrdir/time_kernel.txt' using 1:14  axis x1y2 with lines lc 2 title 'RTprop'; reset"
 
 queue="set terminal x11 4 title 'Queue' size 600,400 position $queposi; set grid; set xlabel 'Time [s]'; set ylabel 'Queuelength [packets]'; plot '$queuedir/time_kernel.txt' using 1:42 with lines lc 6 title 'queue'; reset"
 

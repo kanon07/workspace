@@ -7,7 +7,7 @@ expmode=0
 conn=1
 delay=5
 window=104857600
-time=300
+time=10
 rate=1000
 target=5
 
@@ -35,7 +35,7 @@ do
     #0=sender1
     #1=sender2
     #2=multi
-    expmode=2
+    expmode=0
 
     sh ./temp/setting_experiment.sh $conn $delay $today $window $time $qlen $rate $num $target $expmode $option
 

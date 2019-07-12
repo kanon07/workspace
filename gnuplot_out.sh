@@ -31,10 +31,12 @@ case "$expmode" in
     bbr=`find ${bbrdir} -name *port*.txt`
     bbrtime=`find ${bbrdir} -name time.txt`
     bbrth=`find ${bbrdir} -name *bbr*iperf*.txt`
+    bbrbtl=`find ${bbrdir} -name BTLBW.txt`
     queue=`find ${queuedir} -name *moni*`
     queuetime=`find ${queuedir} -name time.txt`
     paste -d " " $bbrtime $bbr > $bbrdir/time_kernel.txt
     paste -d " " $queuetime $queue > $queuedir/time_kernel.txt
+    paste -d " " $bbrtime $bbrbtl > $bbrdir/time_btl.txt
     echo $bbr $bbrtime
     echo $queue $queuetime ;;
 
@@ -53,6 +55,7 @@ case "$expmode" in
     bbr=`find ${bbrdir} -name *port*.txt`
     bbrtime=`find ${bbrdir} -name time.txt`
     bbrth=`find ${bbrdir} -name *bbr*iperf*.txt`
+    bbrbtl=`find ${bbrdir} -name BTLBW.txt`
     cubic=`find ${cubicdir} -name *port*.txt`
     cubictime=`find ${cubicdir} -name time.txt`
     cubicth=`find ${cubicdir} -name *cubic*iperf*.txt`
@@ -61,6 +64,7 @@ case "$expmode" in
     paste -d " " $bbrtime $bbr > $bbrdir/time_kernel.txt
     paste -d " " $cubictime $cubic > $cubicdir/time_kernel.txt
     paste -d " " $queuetime $queue > $queuedir/time_kernel.txt
+    paste -d " " $bbrtime $bbrbtl > $bbrdir/time_btl.txt
     echo $bbr $bbrtime
     echo $cubic $cubictime
     echo $queue $queuetime ;;
@@ -91,7 +95,7 @@ cwnd1="set grid; set xlabel 'Time [s]'; set ylabel 'Congestion window size [segm
 
 cwnd2="set grid; set xlabel 'Time [s]'; set ylabel 'Congestion window size [segment]'; plot '$cubicdir/time_kernel.txt' using 1:10 with lines lc 4 title 'CUBIC TCP'; $fonts set terminal $extension; set out '$deta/cwnd.$extension'; replot"
 
-btl_rtprop="set grid; set xlabel 'Time [s]'; set ylabel 'Btlbw'; plot '$bbrdir/time_kernel.txt' using 1:12 with lines lc 1 title 'Btlbw'; set y2tics; set y2label 'RTprop [us]'; replot '$bbrdir/time_kernel.txt' using 1:14  axis x1y2 with lines lc 2 title 'RTprop'; $fonts set terminal $extension; set out '$deta/btl_rtprop.$extension'; replot"
+btl_rtprop="set grid; set xlabel 'Time [s]'; set ylabel 'Btlbw [Mbit/s]'; plot '$bbrdir/time_btl.txt' using 1:2 with lines lc 1 title 'Btlbw'; set y2tics; set y2label 'RTprop [us]'; replot '$bbrdir/time_kernel.txt' using 1:14  axis x1y2 with lines lc 2 title 'RTprop'; $fonts set terminal $extension; set out '$deta/btl_rtprop.$extension'; replot"
 
 queue="set grid; set xlabel 'Time [s]'; set ylabel 'Queuelength [packets]'; plot '$queuedir/time_kernel.txt' using 1:42 with lines lc 6 title 'queue'; $fonts set terminal $extension; set out '$deta/queue.$extension'; replot"
 
