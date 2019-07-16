@@ -1,0 +1,16 @@
+ssh -g -R 2000:localhost:22 sakura //sakuraにsshする。次にsakuraから自分に戻って来れるようにする。 sakura:2000にsshするとlocalhost:22につながる
+ssh -D 1080 localhost //自分の1080にダイナミックポートフォワーディング(socksサーバ)を立てる
+ssh -R 1080:localhost:1080 queue //queue(など)にsshしqueueが自分の1080にアクセスするとさくらのsocksサーバにアクセスするようにする
+
+queue:1080 →　sakura:1080　→　外部
+
+proxy設定(receiver機は古すぎるため不可)
+yum.conf
+    proxy=socks4a://localhost:1080
+
+export
+    export http_proxy=socks4a://localhost:1080
+
+git
+    cd dotfiles (etc)
+    git config http.proxy socks4a://localhost:1080
