@@ -11,6 +11,9 @@ num=$8
 target=$9
 expmode=${10}
 option=${11}
+algosender1=${12}
+algosender2=${13}
+pacing=${14}
 
 rm -rf /media/sf_result/$today/number${num}
 rm -rf /media/sf_graphdeta/result/$today/number${num}/
@@ -29,6 +32,9 @@ echo "metrics_flush"
 ssh sender1 "sh /desk/shell/metrics_flush.sh"
 ssh sender2 "sh /desk/shell/metrics_flush.sh"
 
+ssh sender1 "sysctl net.ipv4.tcp_congestion_control=$algosender1" |tee -a $log |tee -a $alllog
+ssh sender2 "sysctl net.ipv4.tcp_congestion_control=$algosender2" |tee -a $log |tee -a $alllog
+
 #ウィンドウサイズ
 echo "setup windowsize $window" |tee -a $log |tee -a $alllog
 ssh sender1 "sh /desk/shell/set_windowsize.sh $window"
@@ -42,11 +48,19 @@ echo "delay ${delay}ms" |tee -a $log |tee -a $alllog
 ssh delay "tc qdisc replace dev eno1 root netem delay ${delay}ms"
 
 #帯域 バッファ
-echo "rate ${rate}mbit, limit $qlen" |tee -a $log |tee -a $alllog
+echo "pfifo_fast rate ${rate}mbit, limit $qlen" |tee -a $log |tee -a $alllog
 ssh queue "tc qdisc replace dev eno1 root netem rate ${rate}mbit limit $qlen"
+#echo "pfifo rate 1000mbit, limit $qlen" |tee -a $log |tee -a $alllog
+#ssh queue "tc qdisc replace dev eno1 root pfifo limit $qlen"
+#echo "sfq rate 1000mbit" |tee -a $log |tee -a $alllog
+#ssh queue "tc qdisc replace dev eno1 root sfq"
 
 #echo "CoDel target ${target}ms"|tee -a $log |tee -a $alllog
 # ssh queue "tc qdisc replace dev eno1 root codel target ${target}ms"
+
+#pacing_gain
+echo "pacing_gain=${pacing}" |tee -a $log |tee -a $alllog
+ssh sender1 "echo 'set cpgp ${pacing}' > /proc/miya_bbr_tuning"
 
 echo "================================================="
 echo "start communication"
@@ -59,7 +73,9 @@ ssh queue "echo a > /proc/sane_kernel_sch_ctrl"
 #iperf起動
 echo "======== start iperf ======="
 if [ $option = 1 ]; then
-    ssh delay "sh /home/shell/autoqdisc.sh" &
+    autoqdisc=exponent_autoqdisc.sh
+    #autoqdisc=liner_autoqdisc.sh
+    ssh delay "sh /home/shell/$autoqdisc" &
 fi
 case "$expmode" in
     "0" ) ssh sender1 "sh /desk/shell/outiperf3.sh $conn $today $time $num" ;;
@@ -76,6 +92,10 @@ ssh queue "echo a > /proc/sane_kernel_sch_ctrl"
 
 #カーネル抽出
 echo "======== start kernel extract ========"
+if [ $option = 1 ]; then
+    ssh delay "sh /home/shell/unixtime.sh /home/shell/autoqdisc.txt" &
+fi
+
 case "$expmode" in
     "0" ) echo "only sender1" |tee -a $log |tee -a $alllog &
     ssh queue "sh /desk/shell/queue_monitor.sh $today $num" &
@@ -90,6 +110,7 @@ case "$expmode" in
     ssh sender1 "sh /desk/shell/pickup.sh /desk/_result/$today $num" &
     ssh sender2 "sh /desk/shell/pickup.sh /desk/_result/$today $num" ;;
 esac
+wait #バックグラウンド実行終了待ち
 echo "======= end kernel extract ========="
 
 ssh sender1 "echo reset > /proc/sane_kernel_bbr_ctrl"
@@ -100,8 +121,19 @@ ssh queue "echo reset > /proc/sane_kernel_sch_ctrl"
 #データ移動
 sh /home/kanon/workspace/temp/deta_scp.sh $today $num $expmode
 if [ $option = 1 ]; then
-    scp delay:/home/shell/autoqdisc.txt /home/kanon/workspace/
+    scp delay:/home/shell/autoqdisc.txt /media/sf_result/$today/number${num}/
+    scp delay:/home/shell/timeautoqdisc.txt /media/sf_result/$today/number${num}/
+    scp delay:/home/shell/cut_autoqdisc.txt /media/sf_result/$today/number${num}/
+    scp delay:/home/shell/$autoqdisc /media/sf_result/$today/number${num}/
 fi
+#データ出力
+sh /home/kanon/workspace/gnuplot_out.sh result/$today/number${num}/ &
+
+
+#delayリセット
+ssh delay "tc qdisc replace dev eno1 root netem delay 0ms"
+#pacing_gainリセット
+ssh sender1 "echo 'set cpgp 0' > /proc/miya_bbr_tuning"
 
 
 echo "===================" >> $alllog

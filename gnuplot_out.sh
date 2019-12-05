@@ -8,7 +8,8 @@ mkdir -p /media/sf_graphdeta/$1
 deta=/media/sf_graphdeta/$1
 
 #拡張子
-extension=png
+extension=emf
+#png
 #emf
 
 
@@ -30,7 +31,7 @@ case "$expmode" in
     "0" )
     bbr=`find ${bbrdir} -name *port*.txt`
     bbrtime=`find ${bbrdir} -name time.txt`
-    bbrth=`find ${bbrdir} -name *bbr*iperf*.txt`
+    bbrth=`find ${bbrdir} -name *iperf*.txt`
     bbrbtl=`find ${bbrdir} -name BTLBW.txt`
     queue=`find ${queuedir} -name *moni*`
     queuetime=`find ${queuedir} -name time.txt`
@@ -43,7 +44,7 @@ case "$expmode" in
     "1" )
     cubic=`find ${cubicdir} -name *port*.txt`
     cubictime=`find ${cubicdir} -name time.txt`
-    cubicth=`find ${cubicdir} -name *cubic*iperf*.txt`
+    cubicth=`find ${cubicdir} -name *iperf*.txt`
     queue=`find ${queuedir} -name *moni*`
     queuetime=`find ${queuedir} -name time.txt`
     paste -d " " $cubictime $cubic > $cubicdir/time_kernel.txt
@@ -54,11 +55,11 @@ case "$expmode" in
     "2" )
     bbr=`find ${bbrdir} -name *port*.txt`
     bbrtime=`find ${bbrdir} -name time.txt`
-    bbrth=`find ${bbrdir} -name *bbr*iperf*.txt`
+    bbrth=`find ${bbrdir} -name *iperf*.txt`
     bbrbtl=`find ${bbrdir} -name BTLBW.txt`
     cubic=`find ${cubicdir} -name *port*.txt`
     cubictime=`find ${cubicdir} -name time.txt`
-    cubicth=`find ${cubicdir} -name *cubic*iperf*.txt`
+    cubicth=`find ${cubicdir} -name *iperf*.txt`
     queue=`find ${queuedir} -name *moni*`
     queuetime=`find ${queuedir} -name time.txt`
     paste -d " " $bbrtime $bbr > $bbrdir/time_kernel.txt
@@ -103,11 +104,12 @@ srtt="set grid; set xlabel 'Time [s]'; set ylabel 'RTT [us]'; plot '$bbrdir/time
 
 delirate="set grid; set xlabel 'Time [s]'; set ylabel 'deliverd [MB]'; plot '$bbrdir/time_kernel.txt' using 1:28 with lines lc 3 title 'deliverd'; set y2tics; set y2label 'interval [us]'; replot '$bbrdir/time_kernel.txt' using 1:30  axis x1y2 with lines lc 4 title 'interval'; $fonts set terminal $extension; set out '$deta/delirate.$extension'; replot"
 
+qdisc="set grid; set xlabel 'Time [s]'; set ylabel 'qdisc [ms]'; plot '$1/autoqdisc.txt'  using 0:13 with lines lc 3 title 'qdisc' ; $fonts set terminal $extension ; set out '$deta/qdisc.$extension' ; replot"
 
 case "$expmode" in
-    "0" ) gnuplot -e "$throughput1" & gnuplot -e "$cwnd1" & gnuplot -e "$btl_rtprop" & gnuplot -e "$queue" & gnuplot -e "$srtt" & gnuplot -e "$delirate" ;;
-    "1" ) gnuplot -e "$throughput2" & gnuplot -e "$cwnd2" & gnuplot -e "$queue" ;;
-    "2" ) gnuplot -e "$co_throughput" & gnuplot -e "$co_cwnd" & gnuplot -e  "$btl_rtprop" & gnuplot -e "$queue" & gnuplot -e "$srtt" & gnuplot -e  "$delirate" ;;
+    "0" ) gnuplot -e "$throughput1" & gnuplot -e "$cwnd1" & gnuplot -e "$btl_rtprop" & gnuplot -e "$queue" & gnuplot -e "$srtt" & gnuplot -e "$delirate" & gnuplot -e "$qdisc" ;;
+    "1" ) gnuplot -e "$throughput2" & gnuplot -e "$cwnd2" & gnuplot -e "$queue" & gnuplot -e "$qdisc" ;;
+    "2" ) gnuplot -e "$co_throughput" & gnuplot -e "$co_cwnd" & gnuplot -e  "$btl_rtprop" & gnuplot -e "$queue" & gnuplot -e "$srtt" & gnuplot -e  "$delirate" & gnuplot -e "$qdisc";;
 esac
 
 

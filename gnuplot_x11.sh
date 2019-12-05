@@ -1,22 +1,26 @@
 #$1=directory 0606, 0705
-#$2=number
+
+plotype=0
+if [ $2 = "-p" ]; then
+    plotype=$3
+fi
 
 num=`echo $1 | awk -F '/' '{print $3}'`
-bbrdir=${1}/${num}_Sender1
-cubicdir=${1}/${num}_Sender2
+sender1dir=${1}/${num}_Sender1
+sender2dir=${1}/${num}_Sender2
 queuedir=${1}/${num}_queue
 mkdir -p /media/sf_graphdeta/$1/
 deta=/media/sf_graphdeta/$1/
 
-if [ -d $bbrdir -a -d $cubicdir ]; then
+if [ -d $sender1dir -a -d $sender2dir ]; then
     echo "co-existing"
     expmode=2
 else
-    if [ -d $bbrdir ]; then
+    if [ -d $sender1dir ]; then
         echo "only sender1"
         expmode=0
 
-    elif [ -d $cubicdir ]; then
+    elif [ -d $sender2dir ]; then
         echo "only sender2"
         expmode=1
     fi
@@ -24,49 +28,50 @@ fi
 
 case "$expmode" in
     "0" )
-    bbr=`find ${bbrdir} -name *port*.txt`
-    bbrtime=`find ${bbrdir} -name time.txt`
-    bbrth=`find ${bbrdir} -name *bbr*iperf*.txt`
-    bbrbtl=`find ${bbrdir} -name BTLBW.txt`
+    kernel1=`find ${sender1dir} -name *port*.txt`
+    time1=`find ${sender1dir} -name time.txt`
+    th1=`find ${sender1dir} -name *iperf*.txt`
+    btl1=`find ${sender1dir} -name BTLBW.txt`
     queue=`find ${queuedir} -name *moni*`
     queuetime=`find ${queuedir} -name time.txt`
-    paste -d " " $bbrtime $bbr > $bbrdir/time_kernel.txt
-    paste -d " " $queuetime $queue > $queuedir/time_kernel.txt
-    paste -d " " $bbrtime $bbrbtl > $bbrdir/time_btl.txt
-    echo $bbr $bbrtime
+    paste -d " " $time1 $kernel1 > $sender1dir/time_kernel.txt &
+    paste -d " " $queuetime $queue > $queuedir/time_kernel.txt &
+    paste -d " " $time1 $btl1 > $sender1dir/time_btl.txt &
+    echo $kernel1 $time1
     echo $queue $queuetime ;;
 
     "1" )
-    cubic=`find ${cubicdir} -name *port*.txt`
-    cubictime=`find ${cubicdir} -name time.txt`
-    cubicth=`find ${cubicdir} -name *cubic*iperf*.txt`
+    kernel2=`find ${sender2dir} -name *port*.txt`
+    time2=`find ${sender2dir} -name time.txt`
+    th2=`find ${sender2dir} -name *iperf*.txt`
     queue=`find ${queuedir} -name *moni*`
     queuetime=`find ${queuedir} -name time.txt`
-    paste -d " " $cubictime $cubic > $cubicdir/time_kernel.txt
-    paste -d " " $queuetime $queue > $queuedir/time_kernel.txt
-    echo $cubic $cubictime
+    paste -d " " $time2 $kernel2 > $sender2dir/time_kernel.txt &
+    paste -d " " $queuetime $queue > $queuedir/time_kernel.txt &
+    echo $kernel2 $time2
     echo $queue $queuetime ;;
 
     "2" )
-    bbr=`find ${bbrdir} -name *port*.txt`
-    bbrtime=`find ${bbrdir} -name time.txt`
-    bbrth=`find ${bbrdir} -name *bbr*iperf*.txt`
-    bbrbtl=`find ${bbrdir} -name BTLBW.txt`
-    cubic=`find ${cubicdir} -name *port*.txt`
-    cubictime=`find ${cubicdir} -name time.txt`
-    cubicth=`find ${cubicdir} -name *cubic*iperf*.txt`
+    kernel1=`find ${sender1dir} -name *port*.txt`
+    time1=`find ${sender1dir} -name time.txt`
+    th1=`find ${sender1dir} -name *iperf*.txt`
+    btl1=`find ${sender1dir} -name BTLBW.txt`
+    kernel2=`find ${sender2dir} -name *port*.txt`
+    time2=`find ${sender2dir} -name time.txt`
+    th2=`find ${sender2dir} -name *iperf*.txt`
     queue=`find ${queuedir} -name *moni*`
     queuetime=`find ${queuedir} -name time.txt`
-    paste -d " " $bbrtime $bbr > $bbrdir/time_kernel.txt
-    paste -d " " $cubictime $cubic > $cubicdir/time_kernel.txt
-    paste -d " " $queuetime $queue > $queuedir/time_kernel.txt
-    paste -d " " $bbrtime $bbrbtl > $bbrdir/time_btl.txt
-    echo $bbr $bbrtime
-    echo $cubic $cubictime
+    paste -d " " $time1 $kernel1 > $sender1dir/time_kernel.txt &
+    paste -d " " $time2 $kernel2 > $sender2dir/time_kernel.txt &
+    paste -d " " $queuetime $queue > $queuedir/time_kernel.txt &
+    paste -s -d " " $time1 $btl1 > $sender1dir/time_btl.txt &
+    echo $kernel1 $time1
+    echo $kernel2 $time2
     echo $queue $queuetime ;;
 
 esac
 
+echo $th1
 
 #x11で出力
 size="600,400"
@@ -78,31 +83,40 @@ srtposi="1300,600"
 deliposi="680,600"
 
 
-co_throughput="set terminal x11 1 title 'Throughput' size $size position $thposi; set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:1200]; plot '$bbrth' using 0:7 with lines lc 3 title 'TCP BBR'; replot '$cubicth' using 0:7 with lines lc 4 title 'CUBIC TCP'; reset"
+co_throughput="set terminal x11 1 title 'Throughput' size $size position $thposi; set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:1200]; plot '$th1' using 0:7 with lines lc 3 title 'TCP BBR'; replot '$th2' using 0:7 with lines lc 4 title 'CUBIC TCP'; reset"
 
-throughput1="set terminal x11 1 title 'Throughput' size $size position $thposi; set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:1200]; plot '$bbrth' using 0:7 with lines lc 3 title 'TCP BBR'; reset"
+throughput1="set terminal x11 1 title 'Throughput' size $size position $thposi; set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:1200]; plot '$th1' using 0:7 with lines lc 3 title 'TCP BBR'; reset"
 
-throughput2="set terminal x11 1 title 'Throughput' size $size position $thposi; set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:1200]; plot '$cubicth' using 0:7 with lines lc 4 title 'CUBIC TCP'; reset"
+throughput2="set terminal x11 1 title 'Throughput' size $size position $thposi; set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:1200]; plot '$th2' using 0:7 with lines lc 4 title 'CUBIC TCP'; reset"
 
 
-co_cwnd="set terminal x11 2 title 'Cwnd' size $size position $cwposi; set grid; set xlabel 'Time [s]'; set ylabel 'Congestion window size [segment]'; plot '$bbrdir/time_kernel.txt' using 1:10 with lines lc 3 title 'TCP BBR'; replot '$cubicdir/time_kernel.txt' using 1:10 with lines lc 4 title 'CUBIC TCP'; reset"
+co_cwnd="set terminal x11 2 title 'Cwnd' size $size position $cwposi; set grid; set xlabel 'Time [s]'; set ylabel 'Congestion window size [segment]'; plot '$sender1dir/time_kernel.txt' using 1:10 with lines lc 3 title 'TCP BBR'; replot '$sender2dir/time_kernel.txt' using 1:10 with lines lc 4 title 'CUBIC TCP'; reset"
 
-cwnd1="set terminal x11 2 title 'Cwnd' size $size position $cwposi; set grid; set xlabel 'Time [s]'; set ylabel 'Congestion window size [segment]'; plot '$bbrdir/time_kernel.txt' using 1:10 with lines lc 3 title 'TCP BBR'; reset"
+cwnd1="set terminal x11 2 title 'Cwnd' size $size position $cwposi; set grid; set xlabel 'Time [s]'; set ylabel 'Congestion window size [segment]'; plot '$sender1dir/time_kernel.txt' using 1:10 with lines lc 3 title 'TCP BBR'; reset"
 
-cwnd2="set terminal x11 2 title 'Cwnd' size $size position $cwposi; set grid; set xlabel 'Time [s]'; set ylabel 'Congestion window size [segment]'; plot '$cubicdir/time_kernel.txt' using 1:10 with lines lc 4 title 'CUBIC TCP'; reset"
+cwnd2="set terminal x11 2 title 'Cwnd' size $size position $cwposi; set grid; set xlabel 'Time [s]'; set ylabel 'Congestion window size [segment]'; plot '$sender2dir/time_kernel.txt' using 1:10 with lines lc 4 title 'CUBIC TCP'; reset"
 
-btl_rtprop="set terminal x11 3 title 'Btlbw, RTprop' size $size position $btrtposi; set grid; set xlabel 'Time [s]'; set ylabel 'Btlbw [Mbit/s]'; plot '$bbrdir/time_btl.txt' using 1:2 with lines lc 1 title 'Btlbw'; set y2tics; set y2label 'RTprop [us]'; set y2tics format '%2.1t{/Symbol \264}10^{%L}'; replot '$bbrdir/time_kernel.txt' using 1:14  axis x1y2 with lines lc 2 title 'RTprop'; reset"
+btl_rtprop="set terminal x11 3 title 'Btlbw, RTprop' size $size position $btrtposi; set grid; set xlabel 'Time [s]'; set ylabel 'Btlbw [Mbit/s]'; plot '$sender1dir/time_btl.txt' using 1:2 with lines lc 1 title 'Btlbw'; set y2tics; set y2label 'RTprop [us]'; set y2tics format '%2.1t{/Symbol \264}10^{%L}'; replot '$sender1dir/time_kernel.txt' using 1:14  axis x1y2 with lines lc 2 title 'RTprop'; reset"
 
 queue="set terminal x11 4 title 'Queue' size 600,400 position $queposi; set grid; set xlabel 'Time [s]'; set ylabel 'Queuelength [packets]'; plot '$queuedir/time_kernel.txt' using 1:42 with lines lc 6 title 'queue'; reset"
 
-srtt="set terminal x11 5 title 'sRTT' size $size position $srtposi; set grid; set xlabel 'Time [s]'; set ylabel 'RTT [us]'; set ytics format '%2.1t{/Symbol \264}10^{%L}'; plot '$bbrdir/time_kernel.txt' using 1:24 with lines lc 7 title 'sRTT'; reset"
+srtt="set terminal x11 5 title 'sRTT' size $size position $srtposi; set grid; set xlabel 'Time [s]'; set ylabel 'RTT [us]'; set ytics format '%2.1t{/Symbol \264}10^{%L}'; plot '$sender1dir/time_kernel.txt' using 1:24 with lines lc 7 title 'sRTT'; reset"
 
-delirate="set terminal x11 6 title 'deliverd, interval' size $size position $deliposi; set grid; set xlabel 'Time [s]'; set ylabel 'deliverd [MB]'; plot '$bbrdir/time_kernel.txt' using 1:28 with lines lc 3 title 'deliverd'; set y2tics; set y2label 'interval [us]'; set ytics format '%2.1t{/Symbol \264}10^{%L}'; set y2tics format '%2.1t{/Symbol \264}10^{%L}'; replot '$bbrdir/time_kernel.txt' using 1:30  axis x1y2 with lines lc 4 title 'interval'; reset"
+delirate="set terminal x11 6 title 'deliverd, interval' size $size position $deliposi; set grid; set xlabel 'Time [s]'; set ylabel 'deliverd [MB]'; plot '$sender1dir/time_kernel.txt' using 1:28 with lines lc 3 title 'deliverd'; set y2tics; set y2label 'interval [us]'; set ytics format '%2.1t{/Symbol \264}10^{%L}'; set y2tics format '%2.1t{/Symbol \264}10^{%L}'; replot '$sender1dir/time_kernel.txt' using 1:30  axis x1y2 with lines lc 4 title 'interval'; reset"
 
+case "$plotype" in
+    "0" ) gnuplot -e " $co_throughput ; $co_cwnd ; $btl_rtprop ; $srtt ; $delirate ; pause -1" ;;
+    "t" ) gnuplot -e " $co_throughput ; pause -1" ;;
+    "c" ) gnuplot -e " $co_cwnd ; pause -1" ;;
+    "b" ) gnuplot -e " $btl_rtprop ; pause -1" ;;
+    "s" ) gnuplot -e " $srtt ; pause -1" ;;
+    "d" ) gnuplot -e " $delirate ; pause -1" ;;
+esac
 
 
 case "$expmode" in
-    "0" ) gnuplot -e " $throughput1 ; $cwnd1 ; $btl_rtprop ; $queue ; $srtt ; $delirate ; pause -1" ;;
+    #"0" ) gnuplot -e " $throughput1 ; $cwnd1 ; $btl_rtprop ; $queue ; $srtt ; $delirate ; pause -1" ;;
+    "0" ) gnuplot -e " $throughput1 ; $cwnd1 ; $btl_rtprop ; $srtt ; $delirate ; pause -1" ;;
     "1" ) gnuplot -e " $throughput2 ; $cwnd2 ; $queue ; pause -1" ;;
     "2" ) gnuplot -e " $co_throughput ; $co_cwnd ; $btl_rtprop ; $queue ; $srtt ; $delirate ; pause -1" ;;
 esac
