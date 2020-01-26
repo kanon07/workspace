@@ -5,7 +5,7 @@ if [ $2 = "-p" ]; then
     plotype=$3
 fi
 
-num=`echo $1 | awk -F '/' '{print $3}'`
+num=`echo $1 | awk -F '/' '{print $NF}'`
 sender1dir=${1}/${num}_Sender1
 sender2dir=${1}/${num}_Sender2
 queuedir=${1}/${num}_queue
@@ -64,11 +64,10 @@ case "$expmode" in
     paste -d " " $time1 $kernel1 > $sender1dir/time_kernel.txt &
     paste -d " " $time2 $kernel2 > $sender2dir/time_kernel.txt &
     paste -d " " $queuetime $queue > $queuedir/time_kernel.txt &
-    paste -s -d " " $time1 $btl1 > $sender1dir/time_btl.txt &
+    paste -d " " $time1 $btl1 > $sender1dir/time_btl.txt &
     echo $kernel1 $time1
     echo $kernel2 $time2
     echo $queue $queuetime ;;
-
 esac
 
 echo $th1
@@ -105,7 +104,6 @@ srtt="set terminal x11 5 title 'sRTT' size $size position $srtposi; set grid; se
 delirate="set terminal x11 6 title 'deliverd, interval' size $size position $deliposi; set grid; set xlabel 'Time [s]'; set ylabel 'deliverd [MB]'; plot '$sender1dir/time_kernel.txt' using 1:28 with lines lc 3 title 'deliverd'; set y2tics; set y2label 'interval [us]'; set ytics format '%2.1t{/Symbol \264}10^{%L}'; set y2tics format '%2.1t{/Symbol \264}10^{%L}'; replot '$sender1dir/time_kernel.txt' using 1:30  axis x1y2 with lines lc 4 title 'interval'; reset"
 
 case "$plotype" in
-    "0" ) gnuplot -e " $co_throughput ; $co_cwnd ; $btl_rtprop ; $srtt ; $delirate ; pause -1" ;;
     "t" ) gnuplot -e " $co_throughput ; pause -1" ;;
     "c" ) gnuplot -e " $co_cwnd ; pause -1" ;;
     "b" ) gnuplot -e " $btl_rtprop ; pause -1" ;;

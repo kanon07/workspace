@@ -3,13 +3,13 @@ today=`date +"%m%d"`
 
 startnum=$1
 endnum=$2
-expmode=2
+expmode=0
 
 conn=1
-delay=5
-window=104857600
-time=300
-rate=1000
+delay=0
+window=209715200
+time=240
+rate=500
 target=5
 
 #0=normal 1=aggressive 2=more_aggressive
@@ -34,16 +34,18 @@ do
     qlen=1000
 
     #option 1=on 0=off
-    option=0
+    option=1
 
     #0=sender1
     #1=sender2
     #2=multi
-    expmode=2
+    expmode=0
     algosender1=bbr
     algosender2=cubic
 
     sh ./temp/setting_experiment.sh $conn $delay $today $window $time $qlen $rate $num $target $expmode $option $algosender1 $algosender2 $pacing
 
+    #expmode=$(( expmode + 1))
+    pacing=$((pacing + 1))
 done
 

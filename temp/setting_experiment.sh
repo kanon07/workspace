@@ -73,8 +73,8 @@ ssh queue "echo a > /proc/sane_kernel_sch_ctrl"
 #iperf起動
 echo "======== start iperf ======="
 if [ $option = 1 ]; then
-    autoqdisc=exponent_autoqdisc.sh
-    #autoqdisc=liner_autoqdisc.sh
+    #autoqdisc=exponent_autoqdisc.sh
+    autoqdisc=liner_autoqdisc.sh
     ssh delay "sh /home/shell/$autoqdisc" &
 fi
 case "$expmode" in
@@ -119,13 +119,14 @@ ssh queue "echo reset > /proc/sane_kernel_sch_ctrl"
 
 
 #データ移動
-sh /home/kanon/workspace/temp/deta_scp.sh $today $num $expmode
 if [ $option = 1 ]; then
-    scp delay:/home/shell/autoqdisc.txt /media/sf_result/$today/number${num}/
-    scp delay:/home/shell/timeautoqdisc.txt /media/sf_result/$today/number${num}/
-    scp delay:/home/shell/cut_autoqdisc.txt /media/sf_result/$today/number${num}/
-    scp delay:/home/shell/$autoqdisc /media/sf_result/$today/number${num}/
+    scp delay:/home/shell/autoqdisc.txt /media/sf_result/$today/number${num}/ &
+    scp delay:/home/shell/timeautoqdisc.txt /media/sf_result/$today/number${num}/ &
+    scp delay:/home/shell/cut_autoqdisc.txt /media/sf_result/$today/number${num}/ &
+    scp delay:/home/shell/$autoqdisc /media/sf_result/$today/number${num}/ &
 fi
+sh /home/kanon/workspace/temp/deta_scp.sh $today $num $expmode
+wait
 #データ出力
 sh /home/kanon/workspace/gnuplot_out.sh result/$today/number${num}/ &
 

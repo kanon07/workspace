@@ -8,7 +8,7 @@ mkdir -p /media/sf_graphdeta/$1
 deta=/media/sf_graphdeta/$1
 
 #拡張子
-extension=emf
+extension=png
 #png
 #emf
 
@@ -104,7 +104,7 @@ srtt="set grid; set xlabel 'Time [s]'; set ylabel 'RTT [us]'; plot '$bbrdir/time
 
 delirate="set grid; set xlabel 'Time [s]'; set ylabel 'deliverd [MB]'; plot '$bbrdir/time_kernel.txt' using 1:28 with lines lc 3 title 'deliverd'; set y2tics; set y2label 'interval [us]'; replot '$bbrdir/time_kernel.txt' using 1:30  axis x1y2 with lines lc 4 title 'interval'; $fonts set terminal $extension; set out '$deta/delirate.$extension'; replot"
 
-qdisc="set grid; set xlabel 'Time [s]'; set ylabel 'qdisc [ms]'; plot '$1/autoqdisc.txt'  using 0:13 with lines lc 3 title 'qdisc' ; $fonts set terminal $extension ; set out '$deta/qdisc.$extension' ; replot"
+qdisc="set grid; set xlabel 'Time [s]'; set ylabel 'qdisc [ms]'; plot '$1/timeautoqdisc.txt'  using 1:14 with lines lc 3 title 'qdisc' ; $fonts set terminal $extension ; set out '$deta/qdisc.$extension' ; replot"
 
 case "$expmode" in
     "0" ) gnuplot -e "$throughput1" & gnuplot -e "$cwnd1" & gnuplot -e "$btl_rtprop" & gnuplot -e "$queue" & gnuplot -e "$srtt" & gnuplot -e "$delirate" & gnuplot -e "$qdisc" ;;
