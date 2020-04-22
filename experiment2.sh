@@ -7,8 +7,8 @@ expmode=0
 
 conn=1
 delay=0
-window=209715200
-time=240
+window=419430400
+time=120
 rate=500
 target=5
 

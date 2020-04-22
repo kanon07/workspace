@@ -78,12 +78,17 @@ if [ $option = 1 ]; then
     ssh delay "sh /home/shell/$autoqdisc" &
 fi
 case "$expmode" in
-    "0" ) ssh sender1 "sh /desk/shell/outiperf3.sh $conn $today $time $num" ;;
+    "0" ) ssh sender1 "sh /desk/shell/outiperf3.sh $conn $today $time $num" & ssh sender2 "sh /desk/shell/ping.sh $time $today $num" &;;
     "1" ) ssh sender2 "sh /desk/shell/outiperf3.sh $conn $today $time $num" ;;
     "2" ) ssh sender1 "sh /desk/shell/outiperf3.sh $conn $today $time $num" & ssh sender2 "sh /desk/shell/outiperf3.sh $conn $today $time $num" ;;
 esac
 countDown $losstime
 echo "======== end iperf ======"
+
+#delayリセット
+ssh delay "tc qdisc replace dev eno1 root netem delay 0ms"
+#pacing_gainリセット
+ssh sender1 "echo 'set cpgp 0' > /proc/miya_bbr_tuning"
 
 #カーネルモニタ終了
 ssh sender1 "echo a > /proc/sane_kernel_bbr_ctrl"
@@ -125,16 +130,17 @@ if [ $option = 1 ]; then
     scp delay:/home/shell/cut_autoqdisc.txt /media/sf_result/$today/number${num}/ &
     scp delay:/home/shell/$autoqdisc /media/sf_result/$today/number${num}/ &
 fi
+
+if [ $expmode = 0 ]; then
+    scp sender2:/desk/shell/time_${today}_number${num}_ping.txt /media/sf_result/$today/number${num}/ &
+fi
+
 sh /home/kanon/workspace/temp/deta_scp.sh $today $num $expmode
 wait
 #データ出力
 sh /home/kanon/workspace/gnuplot_out.sh result/$today/number${num}/ &
 
 
-#delayリセット
-ssh delay "tc qdisc replace dev eno1 root netem delay 0ms"
-#pacing_gainリセット
-ssh sender1 "echo 'set cpgp 0' > /proc/miya_bbr_tuning"
 
 
 echo "===================" >> $alllog

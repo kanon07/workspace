@@ -8,7 +8,8 @@ mkdir -p /media/sf_graphdeta/$1
 deta=/media/sf_graphdeta/$1
 
 #拡張子
-extension=png
+extension=emf
+extension2=png
 #png
 #emf
 
@@ -83,6 +84,9 @@ fonts=${xfont}${yfont}${y2font}${ticfont}${keyfont}
 
 
 #$extensionへの出力
+
+for i in 1 2
+    do
 co_throughput="set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:1200]; plot '$bbrth' using 0:7 with lines lc 3 title 'TCP BBR'; replot '$cubicth' using 0:7 with lines lc 4 title 'CUBIC TCP'; $fonts set terminal $extension; set out '$deta/throughput.$extension'; replot"
 
 throughput1="set grid; set xlabel 'Time [s]'; set ylabel 'Throughput [Mbps]'; set yrange [0:1200]; plot '$bbrth' using 0:7 with lines lc 3 title 'TCP BBR'; $fonts set terminal $extension; set out '$deta/throughput.$extension'; replot"
@@ -112,6 +116,8 @@ case "$expmode" in
     "2" ) gnuplot -e "$co_throughput" & gnuplot -e "$co_cwnd" & gnuplot -e  "$btl_rtprop" & gnuplot -e "$queue" & gnuplot -e "$srtt" & gnuplot -e  "$delirate" & gnuplot -e "$qdisc";;
 esac
 
+extension=$extension2
+done
 
 #using
 #10 = cwnd4= 488

@@ -11,7 +11,10 @@ deliposi="680,600"
 
 #qdisc="set terminal x11 1 title 'qdisc' ; set grid; set xlabel 'Time [s]'; set ylabel 'qdisc [ms]'; set yrange [0:1200]; plot '$th1' using 0:7 with lines lc 3 title 'TCP BBR'; reset"
 #qdisc="set terminal x11 1 title 'qdisc' ; set grid; set xlabel 'Time [s]'; set ylabel 'qdisc [ms]'; plot '$1/autoqdisc.txt' using 1:14 with lines lc 3 ; reset"
-qdisc="set terminal x11 1 title 'qdisc' ; set grid; set xlabel 'Time [s]'; set ylabel 'qdisc [ms]'; plot '$dir' using 1:14 with lines lc 3 ; set y2tics; set y2label 'check'  ; replot '$dir2' using 1:15 axis x1y2 with lines lc 4 ; reset"
+
+qdisc="set terminal x11 1 title 'qdisc' ; set grid; set xlabel 'Time [s]'; set ylabel 'qdisc [ms]'; plot '$dir' using 1:14 with lines lc 3 ; set y2tics; set y2label 'check'  ; set y2range [-1:2] ; replot '$dir2' using 1:15 axis x1y2 with points ps 0.2 lt 4 ; reset"
+
+#qdisc="set terminal png ; set grid; set xlabel 'Time [s]'; set ylabel 'qdisc [ms]'; plot '$dir' using 1:14 with lines lc 3 ; set y2tics; set y2label 'check'  ; set y2range [-1:2] ; replot '$dir2' using 1:15 axis x1y2 with points ps 0.2 lt 4 ; set out '/home/kanon/workspace/result/qdisccheck.png' ; replot"
 
 gnuplot -e " $qdisc ; pause -1"
 

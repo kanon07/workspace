@@ -3,17 +3,16 @@ today=`date +"%m%d"`
 
 startnum=$1
 endnum=$2
-expmode=2
+expmode=0
 
 conn=1
-delay=0
+delay=1000
 window=209715200
-time=120
-rate=1000
+time=30
+rate=500
 target=5
 
-#0=normal 1=aggressive 2=more_aggressive
-pacing=2
+pacing=1
 #10485760
 #20971520
 #33554432
@@ -29,9 +28,9 @@ for i in `seq ${startnum} ${endnum}`
 do
     cnt=$((cnt + 1))
     num=$i
-    qlen=`echo "1024 * (4 ^ ($cnt -1 ))"|bc`
+    #qlen=`echo "1024 * (4 ^ ($cnt -1 ))"|bc`
     #qlen=`echo "16384 * (4 ^ ($cnt -1 ))"|bc`
-    #qlen=1000
+    qlen=1000
 
     #option 1=on 0=off
     option=0
@@ -39,7 +38,7 @@ do
     #0=sender1
     #1=sender2
     #2=multi
-    expmode=2
+    expmode=0
     algosender1=bbr
     algosender2=cubic
 
@@ -47,5 +46,7 @@ do
 
     #expmode=$(( expmode + 1))
     #pacing=$((pacing + 1))
+    #delay=$((delay + 100))
+    #window=$((window - 41943040))
 done
 
