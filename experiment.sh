@@ -6,13 +6,21 @@ endnum=$2
 expmode=0
 
 conn=1
-delay=1000
+delay=0
 window=209715200
-time=30
+time=120
 rate=500
 target=5
 
-pacing=1
+#通信量確認
+tcpdump=0
+
+pacing=0
+RATEth=30
+RTTth=11
+canon_flag=0
+sender1_starttime=0
+sender2_starttime=0
 #10485760
 #20971520
 #33554432
@@ -26,7 +34,6 @@ pacing=1
 cnt=0
 for i in `seq ${startnum} ${endnum}`
 do
-    cnt=$((cnt + 1))
     num=$i
     #qlen=`echo "1024 * (4 ^ ($cnt -1 ))"|bc`
     #qlen=`echo "16384 * (4 ^ ($cnt -1 ))"|bc`
@@ -42,11 +49,21 @@ do
     algosender1=bbr
     algosender2=cubic
 
-    sh ./temp/setting_experiment.sh $conn $delay $today $window $time $qlen $rate $num $target $expmode $option $algosender1 $algosender2 $pacing
+    #if [ $(($cnt % 10)) = 0 ] && [ $cnt != 0 ]; then
+    #    RATEth=10
+    #    RTTth=$((RTTth + 1000))
+    #fi
+
+    sh ./temp/setting_experiment.sh $conn $delay $today $window $time $qlen $rate $num $target $expmode $option $algosender1 $algosender2 $pacing $tcpdump $RATEth $canon_flag $RTTth $sender1_starttime $sender2_starttime
 
     #expmode=$(( expmode + 1))
     #pacing=$((pacing + 1))
-    #delay=$((delay + 100))
+    #delay=$((delay + 10))
     #window=$((window - 41943040))
+    #RATEth=$((RATEth + 10))
+    RTTth=$((RTTth + 1))
+    #canon_flag=$((canon_flag + 1))
+    #cnt=$((cnt + 1))
+    #sender2_starttime=$((sender2_starttime + 15))
 done
 

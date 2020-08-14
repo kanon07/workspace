@@ -14,6 +14,12 @@ option=${11}
 algosender1=${12}
 algosender2=${13}
 pacing=${14}
+tcpdump=${15}
+RATEth=${16}
+canon_flag=${17}
+RTTth=${18}
+sender1_starttime=${19}
+sender2_starttime=${20}
 
 rm -rf /media/sf_result/$today/number${num}
 rm -rf /media/sf_graphdeta/result/$today/number${num}/
@@ -62,6 +68,16 @@ ssh queue "tc qdisc replace dev eno1 root netem rate ${rate}mbit limit $qlen"
 echo "pacing_gain=${pacing}" |tee -a $log |tee -a $alllog
 ssh sender1 "echo 'set cpgp ${pacing}' > /proc/miya_bbr_tuning"
 
+#canon_flag
+echo "canon_flag=${canon_flag}" |tee -a $log |tee -a $alllog
+ssh sender1 "echo $canon_flag > /proc/sys/net/ipv4/canon_flag"
+#RATEth
+echo "RATEth=${RATEth}" |tee -a $log |tee -a $alllog
+ssh sender1 "echo $RATEth > /proc/sys/net/ipv4/RATEth"
+#RTTth
+echo "RTTth=${RTTth}" |tee -a $log |tee -a $alllog
+ssh sender1 "echo $RTTth > /proc/sys/net/ipv4/RTTth"
+
 echo "================================================="
 echo "start communication"
 
@@ -71,35 +87,55 @@ ssh sender2 "echo a > /proc/sane_kernel_tcp_ctrl"
 ssh queue "echo a > /proc/sane_kernel_sch_ctrl"
 
 #iperf起動
-echo "======== start iperf ======="
+echo "=========== start iperf ============"
 if [ $option = 1 ]; then
     #autoqdisc=exponent_autoqdisc.sh
     autoqdisc=liner_autoqdisc.sh
-    ssh delay "sh /home/shell/$autoqdisc" &
+    #autoqdisc=low_liner_autoqdisc.sh
+    ssh delay "sh /home/shell/$autoqdisc $delay" &
 fi
+
+if [ $tcpdump = 1 ]; then
+    ssh receiver "sh /root/tcpdump_count2/dump.sh $today $num $time" &
+fi
+
+#ifconfig
+ssh sender1 "ifconfig > startTX.txt"
+ssh receiver "ifconfig > startRX.txt"
 case "$expmode" in
-    "0" ) ssh sender1 "sh /desk/shell/outiperf3.sh $conn $today $time $num" & ssh sender2 "sh /desk/shell/ping.sh $time $today $num" &;;
-    "1" ) ssh sender2 "sh /desk/shell/outiperf3.sh $conn $today $time $num" ;;
-    "2" ) ssh sender1 "sh /desk/shell/outiperf3.sh $conn $today $time $num" & ssh sender2 "sh /desk/shell/outiperf3.sh $conn $today $time $num" ;;
+    "0" ) ssh sender1 "sh /desk/shell/outiperf3.sh $conn $today $time $num $sender1_starttime" & ssh sender2 "sh /desk/shell/ping.sh $time $today $num" &;;
+    "1" ) ssh sender2 "sh /desk/shell/outiperf3.sh $conn $today $time $num $sender2_starttime" &;;
+    "2" ) ssh sender1 "sh /desk/shell/outiperf3.sh $conn $today $time $num $sender1_starttime" & ssh sender2 "sh /desk/shell/outiperf3.sh $conn $today $time $num $sender2_starttime" &;;
 esac
 countDown $losstime
-echo "======== end iperf ======"
-
-#delayリセット
-ssh delay "tc qdisc replace dev eno1 root netem delay 0ms"
-#pacing_gainリセット
-ssh sender1 "echo 'set cpgp 0' > /proc/miya_bbr_tuning"
+echo "============ end iperf =============="
+#ifconfig
+ssh sender1 "ifconfig > endTX.txt"
+ssh receiver "ifconfig > endRX.txt"
 
 #カーネルモニタ終了
 ssh sender1 "echo a > /proc/sane_kernel_bbr_ctrl"
 ssh sender2 "echo a > /proc/sane_kernel_tcp_ctrl"
 ssh queue "echo a > /proc/sane_kernel_sch_ctrl"
 
+#delayリセット
+ssh delay "tc qdisc replace dev eno1 root netem delay 0ms"
+#pacing_gainリセット
+ssh sender1 "echo 'set cpgp 0' > /proc/miya_bbr_tuning"
+#RATEth リセット
+ssh sender1 "echo 10 > /proc/sys/net/ipv4/RATEth"
+#RTTthリセット
+ssh sender1 "echo 1000 > /proc/sys/net/ipv4/RTTth"
+#canon_flag reset
+ssh sender1 "echo 0 > /proc/sys/net/ipv4/canon_flag"
+#帯域 バッファ reset
+ssh queue "tc qdisc del dev eno1 root"
+
 #カーネル抽出
 echo "======== start kernel extract ========"
-if [ $option = 1 ]; then
-    ssh delay "sh /home/shell/unixtime.sh /home/shell/autoqdisc.txt" &
-fi
+#if [ $option = 1 ]; then
+#    ssh delay "sh /home/shell/unixtime.sh /home/shell/autoqdisc.txt" &
+#fi
 
 case "$expmode" in
     "0" ) echo "only sender1" |tee -a $log |tee -a $alllog &
@@ -129,16 +165,21 @@ if [ $option = 1 ]; then
     scp delay:/home/shell/timeautoqdisc.txt /media/sf_result/$today/number${num}/ &
     scp delay:/home/shell/cut_autoqdisc.txt /media/sf_result/$today/number${num}/ &
     scp delay:/home/shell/$autoqdisc /media/sf_result/$today/number${num}/ &
+    scp delay:/home/shell/autoqdisc_run_time.txt /media/sf_result/$today/number${num}/ &
+fi
+
+if [ $tcpdump = 1 ]; then
+    scp receiver:/root/tcpdump_count2/data/${today}_number${num}_tcpdump_throughput.txt /media/sf_result/$today/number${num}/ &
 fi
 
 if [ $expmode = 0 ]; then
-    scp sender2:/desk/shell/time_${today}_number${num}_ping.txt /media/sf_result/$today/number${num}/ &
+    scp sender2:/desk/shell/ping/time_${today}_number${num}_ping.txt /media/sf_result/$today/number${num}/ &
 fi
 
 sh /home/kanon/workspace/temp/deta_scp.sh $today $num $expmode
 wait
 #データ出力
-sh /home/kanon/workspace/gnuplot_out.sh result/$today/number${num}/ &
+#sh /home/kanon/workspace/gnuplot_out.sh result/$today/number${num}/ &
 
 
 

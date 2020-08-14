@@ -18,4 +18,5 @@ case "$expmode" in
     scp -r queue:/desk/_result/$today/number${num}_queue/ $resultdir ;;
 esac
 
+wait
 echo "========= end deta move =========="
