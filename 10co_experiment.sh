@@ -5,9 +5,9 @@ startnum=$1
 endnum=$2
 expmode=0
 
-bbrconn=1
-cubicconn=1
-delay=1
+bbrconn=10
+cubicconn=10
+delay=0
 window=209715200
 time=120
 rate=1000
@@ -17,7 +17,7 @@ target=5
 tcpdump=0
 
 pacing=0
-RATEth=20
+RATEth=25
 #RTTth=5000
 RTTth=50
 canon_flag=1
@@ -66,10 +66,9 @@ do
     #delay=$((delay + 10))
     #window=$((window - 41943040))
     #RATEth=$((RATEth + 10))
-    #RTTth=$((RTTth + 10))
+    #RTTth=$((RTTth + 1))
     #canon_flag=$((canon_flag + 1))
     #cnt=$((cnt + 1))
-    delay=$((delay * 2))
     #sender2_starttime=$((sender2_starttime + 15))
 done
 

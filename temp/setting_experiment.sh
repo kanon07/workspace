@@ -1,5 +1,5 @@
 . ./temp/countdown.sh
-conn=$1
+bbrconn=$1
 delay=$2
 today=$3
 window=$4
@@ -20,6 +20,8 @@ canon_flag=${17}
 RTTth=${18}
 sender1_starttime=${19}
 sender2_starttime=${20}
+cubicconn=${21}
+sender2_flag=${22}
 
 rm -rf /media/sf_result/$today/number${num}
 rm -rf /media/sf_graphdeta/result/$today/number${num}/
@@ -52,6 +54,7 @@ ssh receiver "sh /desk/shell/set_windowsize.sh $window"
 #遅延時間
 echo "delay ${delay}ms" |tee -a $log |tee -a $alllog
 ssh delay "tc qdisc replace dev eno1 root netem delay ${delay}ms"
+#ssh delay "tc qdisc replace dev eno1 root netem delay ${delay}ms reorder 25% 50%"
 
 #帯域 バッファ
 echo "pfifo_fast rate ${rate}mbit, limit $qlen" |tee -a $log |tee -a $alllog
@@ -71,12 +74,17 @@ ssh sender1 "echo 'set cpgp ${pacing}' > /proc/miya_bbr_tuning"
 #canon_flag
 echo "canon_flag=${canon_flag}" |tee -a $log |tee -a $alllog
 ssh sender1 "echo $canon_flag > /proc/sys/net/ipv4/canon_flag"
+#sender2_flag
+echo "sender2_flag=${sender2_flag}" |tee -a $log |tee -a $alllog
+ssh sender2 "echo $sender2_flag > /proc/sys/net/ipv4/canon_flag"
 #RATEth
 echo "RATEth=${RATEth}" |tee -a $log |tee -a $alllog
 ssh sender1 "echo $RATEth > /proc/sys/net/ipv4/RATEth"
+ssh sender2 "echo $RATEth > /proc/sys/net/ipv4/RATEth"
 #RTTth
 echo "RTTth=${RTTth}" |tee -a $log |tee -a $alllog
 ssh sender1 "echo $RTTth > /proc/sys/net/ipv4/RTTth"
+ssh sender2 "echo $RTTth > /proc/sys/net/ipv4/RTTth"
 
 echo "================================================="
 echo "start communication"
@@ -97,37 +105,47 @@ fi
 
 if [ $tcpdump = 1 ]; then
     ssh receiver "sh /root/tcpdump_count2/dump.sh $today $num $time" &
+    #ssh sender1 "sh /desk/shell/dump.sh $today $num $time" &
+    #ssh sender2 "sh /desk/shell/dump.sh $today $num $time" &
 fi
 
 #ifconfig
-ssh sender1 "ifconfig > startTX.txt"
-ssh receiver "ifconfig > startRX.txt"
+ssh sender1 "ifconfig > /root/sender1startTX.txt" &
+ssh sender2 "ifconfig > /root/sender2startTX.txt" &
+ssh receiver "ifconfig > /root/startRX.txt"
 case "$expmode" in
-    "0" ) ssh sender1 "sh /desk/shell/outiperf3.sh $conn $today $time $num $sender1_starttime" & ssh sender2 "sh /desk/shell/ping.sh $time $today $num" &;;
-    "1" ) ssh sender2 "sh /desk/shell/outiperf3.sh $conn $today $time $num $sender2_starttime" &;;
-    "2" ) ssh sender1 "sh /desk/shell/outiperf3.sh $conn $today $time $num $sender1_starttime" & ssh sender2 "sh /desk/shell/outiperf3.sh $conn $today $time $num $sender2_starttime" &;;
+    #"0" ) ssh sender1 "sh /desk/shell/outiperf3.sh $conn $today $time $num $sender1_starttime" & ssh sender2 "sh /desk/shell/ping.sh $time $today $num" &;;
+    "0" ) ssh sender1 "sh /desk/shell/outiperf3.sh $bbrconn $today $time $num $sender1_starttime" &;;
+    "1" ) ssh sender2 "sh /desk/shell/outiperf3.sh $cubicconn $today $time $num $sender2_starttime" &;;
+    "2" ) ssh sender1 "sh /desk/shell/outiperf3.sh $bbrconn $today $time $num $sender1_starttime" & ssh sender2 "sh /desk/shell/outiperf3.sh $cubicconn $today $time $num $sender2_starttime" &;;
 esac
 countDown $losstime
 echo "============ end iperf =============="
 #ifconfig
-ssh sender1 "ifconfig > endTX.txt"
-ssh receiver "ifconfig > endRX.txt"
+ssh sender1 "ifconfig > sender1endTX.txt" &
+ssh sender2 "ifconfig > sender2endTX.txt" &
+ssh receiver "ifconfig > /root/endRX.txt" 
+ssh sender1 "mv /root/*TX.txt /home/hanato/iperf_2.0.2-4_amd64-linux/_result/${today}/number${num}_Sender1/" &
+ssh sender2 "mv /root/*TX.txt /home/hanato/iperf_2.0.2-4_amd64-linux/_result/${today}/number${num}_Sender2/" &
 
 #カーネルモニタ終了
-ssh sender1 "echo a > /proc/sane_kernel_bbr_ctrl"
-ssh sender2 "echo a > /proc/sane_kernel_tcp_ctrl"
-ssh queue "echo a > /proc/sane_kernel_sch_ctrl"
+ssh sender1 "echo a > /proc/sane_kernel_bbr_ctrl" &
+ssh sender2 "echo a > /proc/sane_kernel_tcp_ctrl" &
+ssh queue "echo a > /proc/sane_kernel_sch_ctrl" &
 
 #delayリセット
-ssh delay "tc qdisc replace dev eno1 root netem delay 0ms"
+ssh delay "tc qdisc del dev eno1 root" &
 #pacing_gainリセット
-ssh sender1 "echo 'set cpgp 0' > /proc/miya_bbr_tuning"
+ssh sender1 "echo 'set cpgp 0' > /proc/miya_bbr_tuning" &
 #RATEth リセット
-ssh sender1 "echo 10 > /proc/sys/net/ipv4/RATEth"
+ssh sender1 "echo 10 > /proc/sys/net/ipv4/RATEth" &
+ssh sender2 "echo 10 > /proc/sys/net/ipv4/RATEth" &
 #RTTthリセット
-ssh sender1 "echo 1000 > /proc/sys/net/ipv4/RTTth"
+ssh sender1 "echo 1000 > /proc/sys/net/ipv4/RTTth" &
+ssh sender2 "echo 1000 > /proc/sys/net/ipv4/RTTth" &
 #canon_flag reset
-ssh sender1 "echo 0 > /proc/sys/net/ipv4/canon_flag"
+ssh sender1 "echo 0 > /proc/sys/net/ipv4/canon_flag" &
+ssh sender2 "echo 0 > /proc/sys/net/ipv4/canon_flag" &
 #帯域 バッファ reset
 ssh queue "tc qdisc del dev eno1 root"
 
@@ -175,6 +193,9 @@ fi
 if [ $expmode = 0 ]; then
     scp sender2:/desk/shell/ping/time_${today}_number${num}_ping.txt /media/sf_result/$today/number${num}/ &
 fi
+
+scp receiver:/root/startRX.txt /media/sf_result/$today/number${num}/ &
+scp receiver:/root/endRX.txt /media/sf_result/$today/number${num}/ &
 
 sh /home/kanon/workspace/temp/deta_scp.sh $today $num $expmode
 wait

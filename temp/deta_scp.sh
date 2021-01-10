@@ -4,7 +4,7 @@ expmode=$3
 resultdir=/media/sf_result/$today/number${num}/
 mkdir -p $resultdir
 
-echo "========= start deta move =========="
+echo "========= start data move =========="
 
 case "$expmode" in
     "0" )  scp -r sender1:/desk/_result/$today/number${num}_Sender1/ $resultdir &
@@ -19,4 +19,4 @@ case "$expmode" in
 esac
 
 wait
-echo "========= end deta move =========="
+echo "========= end data move =========="

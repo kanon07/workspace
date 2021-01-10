@@ -8,7 +8,7 @@ expmode=0
 conn=1
 delay=0
 window=209715200
-time=120
+time=40
 rate=500
 target=5
 
@@ -16,9 +16,9 @@ target=5
 tcpdump=0
 
 pacing=0
-RATEth=30
-RTTth=5000
-canon_flag=0
+RATEth=25
+RTTth=2
+canon_flag=1
 sender1_starttime=0
 sender2_starttime=0
 #10485760
@@ -49,9 +49,9 @@ do
     algosender1=bbr
     algosender2=cubic
 
-    #if [ $(($cnt % 10)) = 0 ] && [ $cnt != 0 ]; then
-    #    RATEth=10
-    #    RTTth=$((RTTth + 1000))
+    #if [ $(($cnt % 20)) = 0 ] && [ $cnt != 0 ]; then
+    #    RATEth=11
+    #    RTTth=$((RTTth + 1))
     #fi
 
     sh ./temp/setting_experiment.sh $conn $delay $today $window $time $qlen $rate $num $target $expmode $option $algosender1 $algosender2 $pacing $tcpdump $RATEth $canon_flag $RTTth $sender1_starttime $sender2_starttime
@@ -60,9 +60,9 @@ do
     #pacing=$((pacing + 1))
     #delay=$((delay + 10))
     #window=$((window - 41943040))
-    #RATEth=$((RATEth + 10))
-    #RTTth=$((RTTth + 1))
-    canon_flag=$((canon_flag + 1))
+    #RATEth=$((RATEth + 1))
+    RTTth=$((RTTth + 1))
+    #canon_flag=$((canon_flag + 1))
     #cnt=$((cnt + 1))
     #sender2_starttime=$((sender2_starttime + 15))
 done
